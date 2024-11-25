@@ -1,24 +1,26 @@
 require("dotenv").config();
 const express = require("express");
-const authRoutes = require("../routes/authRoutes");
-const imageRoutes = require("../routes/imageRoutes");
+const { ApolloServer } = require("apollo-server-express");
+const schema = require("../schema/index");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(express.json());
-
-// Routes
-app.use("/api/auth", authRoutes); // Authentication routes
-app.use("/api/images", imageRoutes); // Image API routes
-
-// Error handling for unmatched routes
-app.use((req, res, next) => {
-  res.status(404).json({ error: "Route not found" });
+// Apollo Server setup
+const server = new ApolloServer({
+  schema,
+  context: ({ req }) => {
+    // Pass the req object to the context
+    return { req };
+  },
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+async function startServer() {
+  await server.start();
+  server.applyMiddleware({ app });
+
+  app.listen(3000, () => {
+    console.log("Server running at http://localhost:3000/graphql");
+  });
+}
+
+startServer();
