@@ -49,17 +49,6 @@ The server will start at `http://localhost:3000`.
 
 ---
 
-## **APIs Enpoints**
-
-Here’s a concise **README.md** introduction to the APIs using a traditional **web service (REST)** setup, detailing the routes, their purposes, and required query parameters or body payloads:
-
-```markdown
-# **Image Search REST API with Authentication**
-
-This RESTful API allows users to securely register, log in, and search for images. The API includes JWT-based authentication to ensure only registered users can access the image search functionality.
-
----
-
 ## **API Endpoints**
 
 ### **1. User Registration**
