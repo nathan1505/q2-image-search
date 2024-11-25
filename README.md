@@ -40,145 +40,12 @@ Create a .env file in the root directory and add the following environment varia
     PIXABAY_API_KEY=your_pixabay_api_key
     STORYBLOCKS_API_KEY=your_storyblocks_api_key
     ```
-Replace `your_unsplash_api_key`, `your_pixabay_api_key`, `your_storyblocks_api_key`, and `your_jwt_secret` with your actual API keys and a secure secret for JWT.
+Replace `your_unsplash_api_key`, `your_pixabay_api_key`, `your_storyblocks_api_key` with your actual API keys and a secure secret for JWT.
 4. **Run the Server:**
     ```bash
     node server/app.js
     ```
 The server will start at `http://localhost:3000`.
-
----
-
-## **API Endpoints**
-
-### **1. User Registration**
-- **Route**: `POST /api/auth/register`
-- **Purpose**: Registers a new user by saving their email and password.
-- **Request Body**:
-  ```json
-  {
-    "email": "user@example.com",
-    "password": "password123"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "message": "User registered successfully."
-  }
-  ```
-- **Error Responses**:
-  - `400 Bad Request`: Missing or invalid email/password.
-  - `400 Bad Request`: User already exists.
-
----
-
-### **2. User Login**
-- **Route**: `POST /api/auth/login`
-- **Purpose**: Logs in a registered user and returns a JWT token.
-- **Request Body**:
-  ```json
-  {
-    "email": "user@example.com",
-    "password": "password123"
-  }
-  ```
-- **Response**:
-  ```json
-  {
-    "message": "Login successful.",
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpX..."
-  }
-  ```
-- **Error Responses**:
-  - `400 Bad Request`: Missing or invalid email/password.
-  - `400 Bad Request`: Invalid credentials (email or password incorrect).
-
----
-
-### **3. Image Search (Protected)**
-- **Route**: `GET /api/images/search`
-- **Purpose**: Allows an authenticated user to search for images from multiple sources (e.g., Unsplash, Pixabay, Storyblocks).
-- **Headers**:
-  - `Authorization: Bearer <your_jwt_token_here>`
-- **Query Parameters**:
-  - `q` (required): The search query (e.g., "nature", "animals").
-- **Example**:
-  ```
-  GET /api/images/search?q=nature
-  Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpX...
-  ```
-- **Response**:
-  ```json
-  {
-    "query": "nature",
-    "results": [
-      {
-        "image_ID": "abc123",
-        "thumbnails": "https://example.com/thumbnail.jpg",
-        "preview": "https://example.com/preview.jpg",
-        "title": "Beautiful Nature",
-        "source": "Unsplash",
-        "tags": ["nature", "forest", "trees"]
-      },
-      {
-        "image_ID": "xyz456",
-        "thumbnails": "https://example.com/thumbnail2.jpg",
-        "preview": "https://example.com/preview2.jpg",
-        "title": "Ocean View",
-        "source": "Pixabay",
-        "tags": ["ocean", "sea", "waves"]
-      }
-    ],
-    "total_results": 2
-  }
-  ```
-- **Error Responses**:
-  - `401 Unauthorized`: Missing or invalid JWT token.
-  - `400 Bad Request`: Missing or invalid query parameter `q`.
-
----
-
-## **Error Handling**
-
-### **Common Error Responses**
-- **401 Unauthorized**: 
-  - Missing or invalid `Authorization` header for protected routes.
-  ```json
-  {
-    "error": "Access denied. No token provided."
-  }
-  ```
-- **403 Forbidden**: 
-  - Expired or invalid JWT token.
-  ```json
-  {
-    "error": "Invalid or expired token."
-  }
-  ```
-- **400 Bad Request**: 
-  - Missing or invalid query parameters or request body.
-  ```json
-  {
-    "error": "Query parameter 'q' is required."
-  }
-  ```
-
----
-
-## **Usage Workflow**
-
-1. **Register a User**:
-   - `POST /api/auth/register`
-   - Provide email and password in the request body.
-
-2. **Log in to Get a JWT Token**:
-   - `POST /api/auth/login`
-   - Use the email and password to receive a token.
-
-3. **Search for Images**:
-   - `GET /api/images/search?q=<query>`
-   - Include the token in the `Authorization` header.
 
 ---
 
@@ -189,5 +56,127 @@ The server will start at `http://localhost:3000`.
 - **dotenv**: Manages environment variables.
 - **express**: Handles HTTP requests and routes.
 - **axios**: Makes external API requests to image providers.
+- **apollo-server-express**: To interact with the API in your application
 
 ---
+
+## **Making Queries**
+
+Url start with `graphql`
+
+### **Basic Query Example**
+
+To fetch data, use a `query`. For example:
+
+```graphql
+query {
+  searchImages(query: "nature") {
+    image_ID
+    thumbnails
+    preview
+    title
+    source
+    tags
+  }
+}
+```
+
+### **Expected JSON Response**
+```json
+{
+  "data": {
+    "searchImages": [
+      {
+        "image_ID": "1",
+        "thumbnails": "https://example.com/thumb1.jpg",
+        "preview": "https://example.com/preview1.jpg",
+        "title": "Image 1",
+        "source": "Internal Database",
+        "tags": ["nature", "forest"]
+      },
+      {
+        "image_ID": "2",
+        "thumbnails": "https://example.com/thumb2.jpg",
+        "preview": "https://example.com/preview2.jpg",
+        "title": "Image 2",
+        "source": "Internal Database",
+        "tags": ["city", "architecture"]
+      }
+    ]
+  }
+}
+```
+
+---
+
+## **Making Mutations**
+
+To modify data, use a `mutation`. For example:
+
+### **Register a New User**
+```graphql
+mutation {
+  register(email: "user@example.com", password: "securepassword")
+}
+```
+
+### **Login to Get a Token**
+```graphql
+mutation {
+  login(email: "user@example.com", password: "securepassword") {
+    token
+    message
+  }
+}
+```
+
+### **Expected JSON Response**
+```json
+{
+  "data": {
+    "login": {
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "message": "Login successful."
+    }
+  }
+}
+```
+
+---
+
+## **Authentication**
+
+If the API requires authentication, include a token in the `Authorization` header with the `Bearer` prefix.
+
+### Example Header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+---
+
+## **Error Handling**
+
+When interacting with a GraphQL API, you may encounter errors. Here’s what typical error responses look like:
+
+### **Example: Missing Authorization Header**
+```json
+{
+  "errors": [
+    {
+      "message": "Access denied. No token provided."
+    }
+  ]
+}
+```
+
+### **Example: Invalid Query**
+```json
+{
+  "errors": [
+    {
+      "message": "Cannot query field 'invalidField' on type 'Image'."
+    }
+  ]
+}
+```
